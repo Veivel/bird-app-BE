@@ -8,7 +8,10 @@ import (
 	"google.golang.org/api/idtoken"
 )
 
-func verifyIdToken(token *jwt.Token) (*idtoken.Payload, error) {
+func VerifyIdToken(tokenString string) (*idtoken.Payload, error) {
+	claims := JWTClaim{}
+	token, _ := jwt.ParseWithClaims(tokenString, &claims, jwtKeyFunc)
+
 	return idtoken.Validate(
 		context.Background(),
 		token.Raw,                     // raw token string

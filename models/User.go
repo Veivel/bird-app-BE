@@ -17,3 +17,10 @@ type UserAuth struct {
 	Password   string `json:"password"`
 	RememberMe bool   `json:"remember_me"`
 }
+
+type UserProfile struct {
+	Username     string   `json:"username"`
+	Email        string   `json:"email"`
+	Avatar       string   `json:"avatar"`
+	CloseFriends []string `json:"close_friends"`
+}

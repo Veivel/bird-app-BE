@@ -1,7 +1,7 @@
 package authservices
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/golang-jwt/jwt"
 )
@@ -10,7 +10,10 @@ func jwtKeyFunc(t *jwt.Token) (interface{}, error) {
 	return JWT_KEY, nil
 }
 
-func ParseJWT(tokenString string) {
+/*
+r
+*/
+func ParseJWT(tokenString string) (JWTClaim, error) {
 	claims := JWTClaim{}
 	token, err := jwt.ParseWithClaims(tokenString, &claims, jwtKeyFunc)
 
@@ -19,24 +22,19 @@ func ParseJWT(tokenString string) {
 		switch v.Errors {
 
 		case jwt.ValidationErrorSignatureInvalid:
-			newToken, err := verifyIdToken(token)
-			if err != nil {
-				// do something to return error
-				fmt.Println("")
-			} else {
-				fmt.Println(newToken)
-			}
+			return claims, errors.New("invalid signature (try parsing as oauth idtoken)")
 
 		case jwt.ValidationErrorExpired:
-			fmt.Println("")
+			return claims, errors.New("token expired")
 
 		default:
-			fmt.Println("")
+			return claims, errors.New("an error occurred")
 		}
 	}
 
 	if !token.Valid {
-		fmt.Println("")
+		return claims, errors.New("token invalid")
 	}
 
+	return claims, nil
 }

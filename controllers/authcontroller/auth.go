@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -96,6 +97,7 @@ func Register(c *gin.Context) {
 			Email:     body.Email,
 			Password:  string(enc),
 			CreatedAt: time.Now(),
+			Avatar:    fmt.Sprintf("%s/tr:w-300,tr:h-300,BirdApp-avatars/default.jpeg", os.Getenv("IMAGEKIT_ENDPOINT_URL")),
 		}
 
 		usersCollection.InsertOne(context.Background(), user)

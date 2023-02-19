@@ -4,18 +4,19 @@ go 1.19
 
 require (
 	github.com/gin-gonic/gin v1.8.2
+	github.com/google/uuid v1.3.0
 	go.mongodb.org/mongo-driver v1.11.2
-	google.golang.org/api v0.110.0
+	google.golang.org/api v0.47.0
 )
 
 require (
-	cloud.google.com/go/compute v1.18.0 // indirect
-	cloud.google.com/go/compute/metadata v0.2.3 // indirect
+	cloud.google.com/go/compute/metadata v0.2.0 // indirect
+	github.com/creasty/defaults v1.6.0 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.2.3 // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
+	github.com/imagekit-developer/imagekit-go v0.0.0-20221027035115-2e643255882a // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -27,8 +28,9 @@ require (
 	golang.org/x/oauth2 v0.5.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20230209215440-0dfe4f8abfcc // indirect
-	google.golang.org/grpc v1.53.0 // indirect
+	google.golang.org/genproto v0.0.0-20210513213006-bf773b8c8384 // indirect
+	google.golang.org/grpc v1.52.0-dev // indirect
+	gopkg.in/validator.v2 v2.0.1 // indirect
 )
 
 require (
@@ -49,7 +51,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
-	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
+	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	golang.org/x/net v0.6.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
