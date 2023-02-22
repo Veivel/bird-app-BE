@@ -4,6 +4,7 @@ import (
 	"bird-app/models"
 	"bird-app/services"
 	"context"
+	"fmt"
 	"math"
 	"strconv"
 	"time"
@@ -38,7 +39,28 @@ func Index(c *gin.Context) {
 			"data": posts,
 		})
 	}
+}
 
+func Show(c *gin.Context) {
+	var post models.Post
+	uuid := c.Param("postUuid")
+
+	result := services.DB.Collection("posts").FindOne(
+		context.Background(),
+		bson.D{{"uuid", uuid}},
+	)
+
+	if result.Err() != nil {
+		c.AbortWithStatusJSON(404, gin.H{
+			"message": "Could not find post with specified UUID.",
+		})
+		return
+	}
+
+	result.Decode(&post)
+	c.JSON(200, gin.H{
+		"data": post,
+	})
 }
 
 // Submit new post
@@ -77,8 +99,95 @@ func Create(c *gin.Context) {
 
 // Edit post content
 func Edit(c *gin.Context) {
+	posts := services.DB.Collection("posts")
+	var body models.Post
+	var post models.Post
+	username, _ := c.Get("username")
 
+	c.BindJSON(&body)
+
+	criteria := bson.D{{"uuid", c.Param("postUuid")}}
+	result := posts.FindOne(
+		context.Background(),
+		criteria,
+	)
+
+	if result.Err() != nil {
+		c.AbortWithStatusJSON(400, gin.H{
+			"message": "Could not find post with specified UUID.",
+		})
+		return
+	}
+
+	result.Decode(&post)
+
+	if username.(string) != post.Author {
+		c.AbortWithStatusJSON(401, gin.H{
+			"message": "You do not have access to edit this post.",
+			"data": gin.H{
+				"author": post.Author,
+				"you":    username.(string),
+			},
+		})
+		return
+	}
+
+	fmt.Println(body)
+	if body.Text != "" {
+		post.Text = body.Text
+	}
+
+	fmt.Println(post)
+	posts.FindOneAndReplace(
+		context.Background(),
+		criteria,
+		post,
+	)
+
+	c.JSON(200, gin.H{
+		"message": "Post successfully edited",
+		"data":    post,
+	})
 }
 
 // Delete post
-func Delete(c *gin.Context) {}
+func Delete(c *gin.Context) {
+	posts := services.DB.Collection("posts")
+	var post models.Post
+	username, _ := c.Get("username")
+
+	criteria := bson.D{{"uuid", c.Param("postUuid")}}
+	result := posts.FindOne(
+		context.Background(),
+		criteria,
+	)
+
+	if result.Err() != nil {
+		c.AbortWithStatusJSON(400, gin.H{
+			"message": "Could not find post with specified UUID.",
+		})
+		return
+	}
+
+	result.Decode(&post)
+
+	if username.(string) != post.Author {
+		c.AbortWithStatusJSON(401, gin.H{
+			"message": "You do not have access to edit this post.",
+			"data": gin.H{
+				"author": post.Author,
+				"you":    username.(string),
+			},
+		})
+		return
+	}
+
+	posts.FindOneAndDelete(
+		context.Background(),
+		criteria,
+	)
+
+	c.JSON(200, gin.H{
+		"message": "Post successfully deleted.",
+	})
+}

@@ -13,7 +13,21 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func ViewSelf(c *gin.Context) {}
+func ViewSelf(c *gin.Context) {
+	var user models.User
+	username, _ := c.Get("username")
+
+	services.DB.Collection("users").FindOne(
+		context.Background(),
+		bson.D{{"username", username}},
+	).Decode(&user)
+
+	user.Password = ""
+
+	c.JSON(200, gin.H{
+		"data": user,
+	})
+}
 
 func ViewPostsSelf(c *gin.Context) {}
 
@@ -25,7 +39,6 @@ read up:
 - https://docs.imagekit.io/api-reference/upload-file-api/server-side-file-upload
 */
 func EditAvatar(c *gin.Context) {
-	// var body models.User
 	var user models.User
 	username, _ := c.Get("username")
 	// avatar, _ := c.Get("avatar")
@@ -77,9 +90,7 @@ func EditAvatar(c *gin.Context) {
 		services.DB.Collection("users").FindOneAndUpdate(
 			context.Background(),
 			bson.D{{"username", username}},
-			bson.M{
-				"$set": bson.M{"avatar": resp.Data.Url},
-			},
+			bson.M{"$set": bson.M{"avatar": resp.Data.Url}},
 		)
 
 		c.JSON(200, gin.H{

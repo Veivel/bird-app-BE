@@ -11,4 +11,5 @@ type Post struct {
 	CreatedAt      time.Time `json:"created_at"`
 	Likes          int       `json:"likes"` // later
 	Comments       []Comment `json:"comments"`
+	// IsEdited       bool      `json:"is_edited"` // later
 }

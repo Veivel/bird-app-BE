@@ -16,25 +16,26 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Println(".env file not found. Will proceed and attempt to use existing environment variables.")
+		fmt.Println("[ERR] .env file not found. Will proceed anyway.")
 	}
 
 	services.ConnectDB()
 
 	router := gin.Default()
-	api := router.Group("/", middlewares.CORS)
+	router.Use(middlewares.CORS)
 
-	posts := api.Group("/posts")
+	posts := router.Group("/posts")
 	posts.GET("/", middlewares.JWT, postcontroller.Index)
 	posts.POST("/", middlewares.JWT, postcontroller.Create)
-	posts.PUT("/:postUuid", middlewares.JWT, postcontroller.Edit)      // todo
-	posts.DELETE("/:postUuid", middlewares.JWT, postcontroller.Delete) // todo
+	posts.GET("/:postUuid", middlewares.JWT, postcontroller.Show)
+	posts.PUT("/:postUuid", middlewares.JWT, postcontroller.Edit)
+	posts.DELETE("/:postUuid", middlewares.JWT, postcontroller.Delete)
 
-	comments := posts.Group("/:postUuid")                                 /* route: /posts/:postUUid */
-	comments.GET("/comments", middlewares.JWT, commentcontroller.Index)   // todo
-	comments.POST("/comments", middlewares.JWT, commentcontroller.Create) // todo
+	comments := posts.Group("/:postUuid") /* route: /posts/:postUuid */
+	comments.GET("/comments", middlewares.JWT, commentcontroller.Index)
+	comments.POST("/comments", middlewares.JWT, commentcontroller.Create)
 
-	auth := api.Group("/auth")
+	auth := router.Group("/auth")
 	auth.POST("/register", authcontroller.Register)
 	auth.POST("/login", authcontroller.Login)
 
@@ -42,12 +43,15 @@ func main() {
 	oauth.POST("/google", authcontroller.GoogleInit)              // todo
 	oauth.POST("/google/callback", authcontroller.GoogleCallback) // todo
 
-	profile := api.Group("/user")
+	profile := router.Group("/user")
 	profile.GET("/:username", profilecontroller.View)
-	profile.GET("/:username/posts", profilecontroller.ViewPosts)            // todo
-	profile.GET("/", middlewares.JWT, profilecontroller.ViewSelf)           // todo
-	profile.GET("/posts", middlewares.JWT, profilecontroller.ViewPostsSelf) // todo
+	profile.GET("/:username/posts", profilecontroller.ViewPosts)
+
+	profile.GET("/", middlewares.JWT, profilecontroller.ViewSelf)
+	profile.GET("/posts", middlewares.JWT, profilecontroller.ViewPostsSelf)
 	profile.POST("/", middlewares.JWT, profilecontroller.EditAvatar)
 
 	router.Run()
+	// todo: refactor
+	// todo: context
 }

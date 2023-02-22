@@ -26,12 +26,14 @@ func Login(c *gin.Context) {
 	result := usersCollection.FindOne(context.Background(), bson.D{{"username", body.Username}})
 	if result.Err() != nil {
 		c.JSON(400, gin.H{
-			"message": "Invalid credentials.",
+			"message": "Invalid credentials. (1)",
 		})
+		return
 	} else if result.Decode(&user); bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)) != nil {
 		c.JSON(400, gin.H{
-			"message": "Invalid credentials.",
+			"message": "Invalid credentials. (2)",
 		})
+		return
 	} else {
 		var expTime time.Time
 		if body.RememberMe {
@@ -55,11 +57,14 @@ func Login(c *gin.Context) {
 			c.JSON(400, gin.H{
 				"message": "Error generating JWT",
 			})
+			return
 		} else {
 			c.JSON(200, gin.H{
-				"token":   token,
-				"message": "Login successful.",
+				"token":           token,
+				"message":         "Login successful.",
+				"expiration_time": expTime,
 			})
+			return
 		}
 	}
 }
