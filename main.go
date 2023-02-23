@@ -14,6 +14,7 @@ import (
 )
 
 func main() {
+	fmt.Println("Loading...")
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("[ERR] .env file not found. Will proceed anyway.")
@@ -39,9 +40,9 @@ func main() {
 	auth.POST("/register", authcontroller.Register)
 	auth.POST("/login", authcontroller.Login)
 
-	oauth := auth.Group("/oauth2")                                /* route: /auth/oauth2 */
-	oauth.POST("/google", authcontroller.GoogleInit)              // todo
-	oauth.POST("/google/callback", authcontroller.GoogleCallback) // todo
+	oauth := auth.Group("/oauth2")                        /* route: /auth/oauth2 */
+	oauth.GET("/google", authcontroller.GoogleInit)       // todo
+	oauth.GET("/callback", authcontroller.GoogleCallback) // todo
 
 	profile := router.Group("/user")
 	profile.GET("/:username", profilecontroller.View)
