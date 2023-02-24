@@ -1,4 +1,4 @@
-package encoderservice
+package encoder
 
 import (
 	"encoding/base64"

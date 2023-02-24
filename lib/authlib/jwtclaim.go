@@ -1,4 +1,4 @@
-package authservices
+package authlib
 
 import (
 	"github.com/golang-jwt/jwt/v4"

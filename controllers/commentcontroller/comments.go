@@ -1,8 +1,8 @@
 package commentcontroller
 
 import (
+	"bird-app/lib"
 	"bird-app/models"
-	"bird-app/services"
 	"context"
 	"time"
 
@@ -15,7 +15,7 @@ func Index(c *gin.Context) {
 	postUuid := c.Param("postUuid")
 	var post models.Post
 
-	services.DB.Collection("posts").FindOne(
+	lib.DB.Collection("posts").FindOne(
 		context.Background(),
 		bson.D{{"uuid", postUuid}},
 	).Decode(&post)
@@ -32,7 +32,7 @@ func Create(c *gin.Context) {
 	var post models.Post
 
 	postUuid := c.Param("postUuid")
-	posts := services.DB.Collection("posts")
+	posts := lib.DB.Collection("posts")
 	criteria := bson.D{{"uuid", postUuid}}
 
 	// Create the Comment struct

@@ -1,9 +1,9 @@
 package authcontroller
 
 import (
+	"bird-app/lib"
+	"bird-app/lib/authlib"
 	"bird-app/models"
-	"bird-app/services"
-	"bird-app/services/authservices"
 	"context"
 	"fmt"
 	"net/http"
@@ -19,7 +19,7 @@ import (
 func Login(c *gin.Context) {
 	var user models.User
 	var body models.UserAuth
-	usersCollection := services.DB.Collection("users")
+	usersCollection := lib.DB.Collection("users")
 
 	c.BindJSON(&body)
 
@@ -42,7 +42,7 @@ func Login(c *gin.Context) {
 			expTime = time.Now().Add(time.Hour * 2)
 		}
 
-		claims := authservices.JWTClaim{
+		claims := authlib.JWTClaim{
 			Username: user.Username,
 			RegisteredClaims: jwt.RegisteredClaims{
 				Issuer:    "ristekbirdapp",
@@ -51,7 +51,7 @@ func Login(c *gin.Context) {
 		}
 
 		tokenAlgo := jwt.NewWithClaims(jwt.SigningMethodHS256, &claims)
-		token, err := tokenAlgo.SignedString(authservices.JWT_KEY)
+		token, err := tokenAlgo.SignedString(authlib.JWT_KEY)
 
 		if err != nil {
 			c.JSON(400, gin.H{
@@ -74,7 +74,7 @@ func Logout(c *gin.Context) {
 }
 
 func Register(c *gin.Context) {
-	usersCollection := services.DB.Collection("users")
+	usersCollection := lib.DB.Collection("users")
 	var body models.User
 
 	err := c.BindJSON(&body)
@@ -102,7 +102,7 @@ func Register(c *gin.Context) {
 			Email:     body.Email,
 			Password:  string(enc),
 			CreatedAt: time.Now(),
-			Avatar:    fmt.Sprintf("%s/tr:w-300,tr:h-300,BirdApp-avatars/default.jpeg", os.Getenv("IMAGEKIT_ENDPOINT_URL")),
+			Avatar:    fmt.Sprintf("%s/tr:w-250,tr:h-250/BirdApp-avatars/default.jpeg", os.Getenv("IMAGEKIT_ENDPOINT_URL")),
 		}
 
 		usersCollection.InsertOne(context.Background(), user)

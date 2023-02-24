@@ -1,9 +1,9 @@
 package middlewares
 
 import (
+	"bird-app/lib"
+	"bird-app/lib/authlib"
 	"bird-app/models"
-	"bird-app/services"
-	"bird-app/services/authservices"
 	"context"
 	"net/http"
 	"strings"
@@ -35,10 +35,10 @@ func JWT(c *gin.Context) {
 	var user models.User
 	var criteria bson.D
 	// parse token as jwt
-	claims, err := authservices.ParseJWT(tokenString)
+	claims, err := authlib.ParseJWT(tokenString)
 	if err != nil {
 		// parse IDtoken as jwt (oauth2)
-		idtoken, err := authservices.VerifyIdToken(tokenString)
+		idtoken, err := authlib.VerifyIdToken(tokenString)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"message": err.Error(),
@@ -50,7 +50,7 @@ func JWT(c *gin.Context) {
 		criteria = bson.D{{"username", claims.Username}}
 	}
 
-	result := services.DB.Collection("users").FindOne(context.Background(), criteria)
+	result := lib.DB.Collection("users").FindOne(context.Background(), criteria)
 	if result.Err() != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"message": result.Err().Error(),

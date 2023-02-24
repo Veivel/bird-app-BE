@@ -1,9 +1,9 @@
 package authcontroller
 
 import (
+	"bird-app/lib"
+	"bird-app/lib/authlib"
 	"bird-app/models"
-	"bird-app/services"
-	"bird-app/services/authservices"
 	"context"
 	"fmt"
 	"net/http"
@@ -17,8 +17,8 @@ import (
 )
 
 func GoogleInit(c *gin.Context) {
-	gothic.Store = authservices.GetCookieStore()
-	goth.UseProviders(authservices.GetGoogleProvider(os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET")))
+	gothic.Store = authlib.GetCookieStore()
+	goth.UseProviders(authlib.GetGoogleProvider(os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET")))
 
 	c.Request = c.Request.WithContext(context.WithValue(context.Background(), "provider", "google"))
 	// try to get the user without re-authenticating
@@ -32,10 +32,10 @@ func GoogleInit(c *gin.Context) {
 }
 
 func GoogleCallback(c *gin.Context) {
-	users := services.DB.Collection("users")
+	users := lib.DB.Collection("users")
 	var user models.User
-	gothic.Store = authservices.GetCookieStore()
-	goth.UseProviders(authservices.GetGoogleProvider(os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET")))
+	gothic.Store = authlib.GetCookieStore()
+	goth.UseProviders(authlib.GetGoogleProvider(os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET")))
 
 	gothUser, err := gothic.CompleteUserAuth(c.Writer, c.Request)
 	if err != nil {

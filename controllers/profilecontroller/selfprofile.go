@@ -1,9 +1,9 @@
 package profilecontroller
 
 import (
+	"bird-app/lib"
+	"bird-app/lib/encoder"
 	"bird-app/models"
-	"bird-app/services"
-	"bird-app/services/encoderservice"
 	"context"
 	"fmt"
 
@@ -17,7 +17,7 @@ func ViewSelf(c *gin.Context) {
 	var user models.User
 	username, _ := c.Get("username")
 
-	services.DB.Collection("users").FindOne(
+	lib.DB.Collection("users").FindOne(
 		context.Background(),
 		bson.D{{"username", username}},
 	).Decode(&user)
@@ -43,7 +43,7 @@ func EditAvatar(c *gin.Context) {
 	username, _ := c.Get("username")
 	// avatar, _ := c.Get("avatar")
 
-	services.DB.Collection("users").FindOne(
+	lib.DB.Collection("users").FindOne(
 		context.Background(),
 		bson.D{{"username", username}},
 	).Decode(&user)
@@ -59,7 +59,7 @@ func EditAvatar(c *gin.Context) {
 
 	for _, file := range files {
 		actualFile, _ := file.Open()
-		fileBase64 := encoderservice.GetBase64(actualFile)
+		fileBase64 := encoder.GetBase64(actualFile)
 
 		ik, err := imagekit.New()
 		if err != nil {
@@ -87,7 +87,7 @@ func EditAvatar(c *gin.Context) {
 			return
 		}
 
-		services.DB.Collection("users").FindOneAndUpdate(
+		lib.DB.Collection("users").FindOneAndUpdate(
 			context.Background(),
 			bson.D{{"username", username}},
 			bson.M{"$set": bson.M{"avatar": resp.Data.Url}},

@@ -1,8 +1,8 @@
 package postcontroller
 
 import (
+	"bird-app/lib"
 	"bird-app/models"
-	"bird-app/services"
 	"context"
 	"fmt"
 	"math"
@@ -23,7 +23,7 @@ func Index(c *gin.Context) {
 	pageStr, _ := strconv.Atoi(c.Query("page"))
 	newNum := POSTS_PER_PAGE * (int64(math.Max(1.0, float64(pageStr))) - 1)
 
-	cursor, err := services.DB.Collection("posts").Find(context.Background(), bson.D{}, &options.FindOptions{
+	cursor, err := lib.DB.Collection("posts").Find(context.Background(), bson.D{}, &options.FindOptions{
 		Skip: &newNum,
 	})
 	if err != nil {
@@ -45,7 +45,7 @@ func Show(c *gin.Context) {
 	var post models.Post
 	uuid := c.Param("postUuid")
 
-	result := services.DB.Collection("posts").FindOne(
+	result := lib.DB.Collection("posts").FindOne(
 		context.Background(),
 		bson.D{{"uuid", uuid}},
 	)
@@ -89,7 +89,7 @@ func Create(c *gin.Context) {
 		Likes:          0,
 	}
 
-	services.DB.Collection("posts").InsertOne(context.Background(), post)
+	lib.DB.Collection("posts").InsertOne(context.Background(), post)
 
 	c.JSON(201, gin.H{
 		"message": "Successfully created post.",
@@ -99,7 +99,7 @@ func Create(c *gin.Context) {
 
 // Edit post content
 func Edit(c *gin.Context) {
-	posts := services.DB.Collection("posts")
+	posts := lib.DB.Collection("posts")
 	var body models.Post
 	var post models.Post
 	username, _ := c.Get("username")
@@ -152,7 +152,7 @@ func Edit(c *gin.Context) {
 
 // Delete post
 func Delete(c *gin.Context) {
-	posts := services.DB.Collection("posts")
+	posts := lib.DB.Collection("posts")
 	var post models.Post
 	username, _ := c.Get("username")
 

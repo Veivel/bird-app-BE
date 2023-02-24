@@ -1,8 +1,8 @@
 package profilecontroller
 
 import (
+	"bird-app/lib"
 	"bird-app/models"
-	"bird-app/services"
 	"context"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +14,7 @@ func View(c *gin.Context) {
 	var user models.User
 
 	username := c.Param("username")
-	result := services.DB.Collection("users").FindOne(context.Background(), bson.D{{"username", username}})
+	result := lib.DB.Collection("users").FindOne(context.Background(), bson.D{{"username", username}})
 	if result.Err() != nil {
 		c.AbortWithStatusJSON(400, gin.H{
 			"message": "User not found.",
@@ -38,7 +38,7 @@ func ViewPosts(c *gin.Context) {
 	var posts []models.Post
 
 	username := c.Param("username")
-	result := services.DB.Collection("users").FindOne(context.Background(), bson.D{{"username", username}})
+	result := lib.DB.Collection("users").FindOne(context.Background(), bson.D{{"username", username}})
 	if result.Err() != nil {
 		c.AbortWithStatusJSON(400, gin.H{
 			"message": "User not found.",
@@ -48,7 +48,7 @@ func ViewPosts(c *gin.Context) {
 
 	result.Decode(&user)
 
-	cursor, err := services.DB.Collection("posts").Find(context.Background(), bson.D{{"author", username}})
+	cursor, err := lib.DB.Collection("posts").Find(context.Background(), bson.D{{"author", username}})
 	if err != nil {
 		c.AbortWithStatusJSON(400, gin.H{
 			"message": "User has no posts.",
