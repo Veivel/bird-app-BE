@@ -4,12 +4,10 @@ import (
 	"bird-app/lib"
 	"bird-app/lib/encoder"
 	"bird-app/models"
+	"bird-app/services/avatarservices"
 	"context"
-	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/imagekit-developer/imagekit-go"
-	"github.com/imagekit-developer/imagekit-go/api/uploader"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -41,7 +39,6 @@ read up:
 func EditAvatar(c *gin.Context) {
 	var user models.User
 	username, _ := c.Get("username")
-	// avatar, _ := c.Get("avatar")
 
 	lib.DB.Collection("users").FindOne(
 		context.Background(),
@@ -61,37 +58,13 @@ func EditAvatar(c *gin.Context) {
 		actualFile, _ := file.Open()
 		fileBase64 := encoder.GetBase64(actualFile)
 
-		ik, err := imagekit.New()
+		resp, err := avatarservices.Upload(fileBase64, username.(string))
 		if err != nil {
-			c.AbortWithStatusJSON(400, gin.H{
-				"message": "Could not create an ImageKit instance",
-				"err":     err.Error(),
+			c.JSON(400, gin.H{
+				"message": err.Error(),
 			})
 			return
 		}
-
-		var f bool = false
-		var t bool = true
-		resp, err := ik.Uploader.Upload(context.Background(), fileBase64, uploader.UploadParam{
-			Folder:            "BirdApp-avatars",
-			FileName:          fmt.Sprintf("avatar_%s.jpeg", username),
-			Tags:              "avatar",
-			UseUniqueFileName: &f,
-			OverwriteFile:     &t,
-		})
-		if err != nil {
-			c.AbortWithStatusJSON(400, gin.H{
-				"message": "Could not upload file",
-				"err":     err.Error(),
-			})
-			return
-		}
-
-		lib.DB.Collection("users").FindOneAndUpdate(
-			context.Background(),
-			bson.D{{"username", username}},
-			bson.M{"$set": bson.M{"avatar": resp.Data.Url}},
-		)
 
 		c.JSON(200, gin.H{
 			"avatar": resp.Data.Url,

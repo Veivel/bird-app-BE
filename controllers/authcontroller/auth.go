@@ -2,16 +2,12 @@ package authcontroller
 
 import (
 	"bird-app/lib"
-	"bird-app/lib/authlib"
 	"bird-app/models"
+	"bird-app/services/authservices"
 	"context"
-	"fmt"
 	"net/http"
-	"os"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -35,23 +31,7 @@ func Login(c *gin.Context) {
 		})
 		return
 	} else {
-		var expTime time.Time
-		if body.RememberMe {
-			expTime = time.Now().Add(time.Hour * 24 * 7)
-		} else {
-			expTime = time.Now().Add(time.Hour * 2)
-		}
-
-		claims := authlib.JWTClaim{
-			Username: user.Username,
-			RegisteredClaims: jwt.RegisteredClaims{
-				Issuer:    "ristekbirdapp",
-				ExpiresAt: jwt.NewNumericDate(expTime),
-			},
-		}
-
-		tokenAlgo := jwt.NewWithClaims(jwt.SigningMethodHS256, &claims)
-		token, err := tokenAlgo.SignedString(authlib.JWT_KEY)
+		token, expTime, err := authservices.GenerateToken(body, user)
 
 		if err != nil {
 			c.JSON(400, gin.H{
@@ -75,7 +55,7 @@ func Logout(c *gin.Context) {
 
 func Register(c *gin.Context) {
 	usersCollection := lib.DB.Collection("users")
-	var body models.User
+	var body models.UserAuth
 
 	err := c.BindJSON(&body)
 	if err != nil || body.Email == "" || body.Password == "" || body.Username == "" {
@@ -91,21 +71,7 @@ func Register(c *gin.Context) {
 			"message": "Username is already in use.",
 		})
 	} else {
-		enc, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
-		if err != nil {
-			fmt.Println("Error generating a hash with bcrypt.")
-			panic(err)
-		}
-
-		user := models.User{
-			Username:  body.Username,
-			Email:     body.Email,
-			Password:  string(enc),
-			CreatedAt: time.Now(),
-			Avatar:    fmt.Sprintf("%s/tr:w-250,tr:h-250/BirdApp-avatars/default.jpeg", os.Getenv("IMAGEKIT_ENDPOINT_URL")),
-		}
-
-		usersCollection.InsertOne(context.Background(), user)
+		user, _ := authservices.RegisterWithCredentials(body)
 
 		c.JSON(http.StatusCreated, gin.H{
 			"message": "Successfully registered user.",

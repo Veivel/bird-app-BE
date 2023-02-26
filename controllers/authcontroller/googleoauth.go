@@ -4,6 +4,7 @@ import (
 	"bird-app/lib"
 	"bird-app/lib/authlib"
 	"bird-app/models"
+	"bird-app/services/authservices"
 	"context"
 	"fmt"
 	"net/http"
@@ -17,7 +18,7 @@ import (
 )
 
 func GoogleInit(c *gin.Context) {
-	gothic.Store = authlib.GetCookieStore()
+	gothic.Store = authlib.GetCookieStore(c.Request.URL.String())
 	goth.UseProviders(authlib.GetGoogleProvider(os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET")))
 
 	c.Request = c.Request.WithContext(context.WithValue(context.Background(), "provider", "google"))
@@ -32,9 +33,10 @@ func GoogleInit(c *gin.Context) {
 }
 
 func GoogleCallback(c *gin.Context) {
-	users := lib.DB.Collection("users")
 	var user models.User
-	gothic.Store = authlib.GetCookieStore()
+
+	users := lib.DB.Collection("users")
+	gothic.Store = authlib.GetCookieStore(c.Request.URL.String())
 	goth.UseProviders(authlib.GetGoogleProvider(os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET")))
 
 	gothUser, err := gothic.CompleteUserAuth(c.Writer, c.Request)
@@ -56,7 +58,7 @@ func GoogleCallback(c *gin.Context) {
 			Avatar:    gothUser.AvatarURL,
 		}
 
-		users.InsertOne(context.Background(), user)
+		authservices.RegisterUser(user)
 
 		c.JSON(200, gin.H{
 			"user":    user,

@@ -26,6 +26,7 @@ func main() {
 	router.Use(middlewares.CORS)
 
 	posts := router.Group("/posts")
+	posts.GET("/guest", postcontroller.GuestIndex)        // todo: close friends
 	posts.GET("/", middlewares.JWT, postcontroller.Index) // todo: close friends
 	posts.POST("/", middlewares.JWT, postcontroller.Create)
 	posts.GET("/:postUuid", middlewares.JWT, postcontroller.Show)

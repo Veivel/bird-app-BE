@@ -5,6 +5,7 @@ import (
 	"bird-app/lib/authlib"
 	"bird-app/models"
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -37,23 +38,32 @@ func JWT(c *gin.Context) {
 	// parse token as jwt
 	claims, err := authlib.ParseJWT(tokenString)
 	if err != nil {
+		fmt.Println(tokenString)
+		if tokenString == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"message": "No token supplied",
+			})
+		}
+
 		// parse IDtoken as jwt (oauth2)
 		idtoken, err := authlib.VerifyIdToken(tokenString)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"message": err.Error(),
+				"message": "Could not verify IDToken",
+				"error":   err.Error(),
 			})
 			return
 		}
-		criteria = bson.D{{"username", idtoken.Claims["name"]}}
+		criteria = bson.D{{Key: "username", Value: idtoken.Claims["name"]}}
 	} else {
-		criteria = bson.D{{"username", claims.Username}}
+		criteria = bson.D{{Key: "username", Value: claims.Username}}
 	}
 
 	result := lib.DB.Collection("users").FindOne(context.Background(), criteria)
 	if result.Err() != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"message": result.Err().Error(),
+			"message": "Could not find user",
+			"error":   result.Err().Error(),
 		})
 	}
 

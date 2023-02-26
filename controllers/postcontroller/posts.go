@@ -15,16 +15,25 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// Show user's "home timeline"
+func GuestIndex(c *gin.Context) {
+
+	c.JSON(200, gin.H{
+		"message": "Not implemented yet",
+	})
+}
+
+// Show user's "home timeline", including close friends.
 func Index(c *gin.Context) {
 	const POSTS_PER_PAGE = 10
 
-	var posts [POSTS_PER_PAGE]models.Post
+	placeholderPost := models.Post{}
+	posts := []models.Post{}
 	pageStr, _ := strconv.Atoi(c.Query("page"))
 	newNum := POSTS_PER_PAGE * (int64(math.Max(1.0, float64(pageStr))) - 1)
 
 	cursor, err := lib.DB.Collection("posts").Find(context.Background(), bson.D{}, &options.FindOptions{
 		Skip: &newNum,
+		Sort: bson.D{{Key: "_id", Value: -1}},
 	})
 	if err != nil {
 		c.AbortWithStatusJSON(400, gin.H{
@@ -33,7 +42,11 @@ func Index(c *gin.Context) {
 		return
 	} else {
 		for i := 0; i < POSTS_PER_PAGE && cursor.TryNext(context.Background()); i++ {
+			posts = append(posts, placeholderPost)
 			cursor.Decode(&posts[i])
+			if posts[i].Author == "" {
+				break
+			}
 		}
 		c.JSON(200, gin.H{
 			"data": posts,
@@ -47,7 +60,7 @@ func Show(c *gin.Context) {
 
 	result := lib.DB.Collection("posts").FindOne(
 		context.Background(),
-		bson.D{{"uuid", uuid}},
+		bson.D{{Key: "uuid", Value: uuid}},
 	)
 
 	if result.Err() != nil {
@@ -106,7 +119,7 @@ func Edit(c *gin.Context) {
 
 	c.BindJSON(&body)
 
-	criteria := bson.D{{"uuid", c.Param("postUuid")}}
+	criteria := bson.D{{Key: "uuid", Value: c.Param("postUuid")}}
 	result := posts.FindOne(
 		context.Background(),
 		criteria,
@@ -156,7 +169,7 @@ func Delete(c *gin.Context) {
 	var post models.Post
 	username, _ := c.Get("username")
 
-	criteria := bson.D{{"uuid", c.Param("postUuid")}}
+	criteria := bson.D{{Key: "uuid", Value: c.Param("postUuid")}}
 	result := posts.FindOne(
 		context.Background(),
 		criteria,
